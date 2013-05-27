@@ -618,6 +618,11 @@ static NSOperationQueue *_sharedNetworkQueue;
   return MKNETWORKCACHE_DEFAULT_COST;
 }
 
+-(unsigned long long int) cacheDiskSize{
+    
+    return MKNETWORKCACHE_DEFAULT_DISK_SIZE;
+}
+
 -(void) saveCache {
   
   for(NSString *cacheKey in [self.memoryCache allKeys])
@@ -723,6 +728,12 @@ static NSOperationQueue *_sharedNetworkQueue;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(saveCache)
                                                name:UIApplicationWillTerminateNotification
                                              object:nil];
+    
+    //check for emptyCache whenever coming to app
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(emptyCache)
+                                                 name:UIApplicationDidBecomeActiveNotification
+                                               object:nil];
   
 #elif TARGET_OS_MAC
   
@@ -749,18 +760,66 @@ static NSOperationQueue *_sharedNetworkQueue;
                                 contentsOfDirectoryAtPath:[self cacheDirectoryName] error:&error];
   if(error) DLog(@"%@", error);
   
-  error = nil;
+    error = nil;
+    
+    unsigned long long int folderSize = [self folderSize:[self cacheDirectoryName]];
+    unsigned long long int sizeToRemove = folderSize - [self cacheDiskSize];
+    
+    if (folderSize <= 0) {
+        //return if we have not exceeded the limit
+        return;
+    }
+
+    unsigned long long int fileSize = 0;
+    
+    int i = 0;
+    
   for(NSString *fileName in directoryContents) {
     
     NSString *path = [[self cacheDirectoryName] stringByAppendingPathComponent:fileName];
+      
+      //calcualte size and add to count
+      NSDictionary *fileDictionary = [[NSFileManager defaultManager]
+                                      attributesOfItemAtPath:path
+                                      error:&error];
+      
+      fileSize += [fileDictionary fileSize];
+      
+      //remove file
     [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
     if(error) DLog(@"%@", error);
+      
+      //break if we are back in limit
+      if (fileSize > sizeToRemove) {
+          break;
+      }
   }
   
   error = nil;
   NSString *cacheInvalidationPlistFilePath = [[self cacheDirectoryName] stringByAppendingPathExtension:@"plist"];
   [[NSFileManager defaultManager] removeItemAtPath:cacheInvalidationPlistFilePath error:&error];
   if(error) DLog(@"%@", error);
+}
+
+- (unsigned long long int)folderSize:(NSString *)folderPath {
+    NSArray *filesArray = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:folderPath error:nil];
+    NSEnumerator *filesEnumerator = [filesArray objectEnumerator];
+    NSString *fileName;
+    unsigned long long int fileSize = 0;
+    
+    while (fileName = [filesEnumerator nextObject]) {
+        
+        NSString *path = [[self cacheDirectoryName] stringByAppendingPathComponent:fileName];
+        NSError *error = nil;
+        
+        NSDictionary *fileDictionary = [[NSFileManager defaultManager]
+                                        attributesOfItemAtPath:path
+                                        error:&error];
+        
+        fileSize += [fileDictionary fileSize];
+    }
+    
+    return fileSize;
 }
 
 @end

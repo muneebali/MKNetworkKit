@@ -384,6 +384,18 @@
  */
 -(int) cacheMemoryCost;
 
+
+/*!
+ *  @abstract Cache Directory In Disk Size
+ *
+ *  @discussion
+ *	This method can be over-ridden by subclasses to provide an alternative in disk cache size.
+ *  By default, MKNetworkKit caches MKNETWORKCACHE_DEFAULT_DISK_SIZE bytes in disk cache
+ *  The default size is MKNETWORKCACHE_DEFAULT_DISK_SIZE
+ *  Overriding this method is optional
+ */
+-(unsigned long long int) cacheDiskSize;
+
 /*!
  *  @abstract Enable Caching
  *  
@@ -412,6 +424,18 @@
  *	This method is a handy helper that you can use to check for network reachability.
  */
 -(BOOL) isReachable;
+
+/*!
+ *  @abstract Empties previously cached data
+ *
+ *  @discussion
+ *	This method is a handy helper that you can use to clear cached data that is exceeding the limit
+ *  specified by cacheDiskSize method.
+ *  By default, MKNetworkKit doens't cache your requests. Use this only when you enabled caching
+ *  @seealso
+ *  useLRUCache
+ */
+-(void) emptyCacheWRTDiskSize;
 
 /*!
  *  @abstract Boolean variable that states whether the request should automatically include an Accept-Language header.
