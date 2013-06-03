@@ -771,9 +771,7 @@ static NSOperationQueue *_sharedNetworkQueue;
     }
 
     unsigned long long int fileSize = 0;
-    
-    int i = 0;
-    
+        
   for(NSString *fileName in directoryContents) {
     
     NSString *path = [[self cacheDirectoryName] stringByAppendingPathComponent:fileName];

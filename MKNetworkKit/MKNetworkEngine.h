@@ -426,18 +426,6 @@
 -(BOOL) isReachable;
 
 /*!
- *  @abstract Empties previously cached data
- *
- *  @discussion
- *	This method is a handy helper that you can use to clear cached data that is exceeding the limit
- *  specified by cacheDiskSize method.
- *  By default, MKNetworkKit doens't cache your requests. Use this only when you enabled caching
- *  @seealso
- *  useLRUCache
- */
--(void) emptyCacheWRTDiskSize;
-
-/*!
  *  @abstract Boolean variable that states whether the request should automatically include an Accept-Language header.
  *  @property shouldSendAcceptLanguageHeader
  *
